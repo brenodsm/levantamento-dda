@@ -72,7 +72,7 @@ grafico_setor.update_traces(
 # Criar a visualização
 st.title('Levantamento DDA')
 st.sidebar.title("**Selecione uma DashBoard**")
-opcoes_sidebar = st.sidebar.radio('ㅤ', ['Situação Vinculo', 'Situação - Nome Cedente', 'Diferença pelo nome das empresas', 'Vínculos Agrupados por Setor'])
+opcoes_sidebar = st.sidebar.radio('ㅤ', ['Situação Vinculo', 'Situação - Nome Cedente', 'Diferença pelo nome das empresas', 'Vínculos Agrupados por Setor','Empresas por Setores'])
 
 
 for c in range(10):
@@ -149,4 +149,22 @@ elif opcoes_sidebar == 'Diferença pelo nome das empresas':
     st.plotly_chart(grafico_vinculado)
 
 elif opcoes_sidebar == 'Vínculos Agrupados por Setor':
-    st.plotly_chart(grafico_setor)   
+    st.plotly_chart(grafico_setor)
+
+elif opcoes_sidebar == 'Empresas por Setores':
+
+    # Remover duplicatas com base no 'Nome Cedente' e agrupar observações
+    df_dda['Observação do Vínculo'] = df_dda.groupby(['Nome Cedente', 'Setor'])['Observação do Vínculo'].transform(lambda x: ', '.join(x.dropna().unique()))
+
+    # Remover duplicatas, mantendo apenas uma linha por empresa
+    df_unicos = df_dda.drop_duplicates(subset=['Nome Cedente', 'Setor'])
+
+    # Exibir o dropdown para selecionar o setor
+    setores = df_unicos['Setor'].unique()
+    setor_selecionado = st.selectbox("Escolha o Setor", setores)
+
+    # Filtrar as empresas pelo setor selecionado
+    empresas_filtradas = df_unicos[df_unicos['Setor'] == setor_selecionado]
+
+    # Exibir as empresas filtradas
+    st.dataframe(empresas_filtradas[['Nome Cedente', 'Observação do Vínculo']])
