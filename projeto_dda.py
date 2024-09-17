@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from io import BytesIO
 
 # Carregar e preparar os dados
 df_dda = pd.read_excel('Planejamento Pagamentos DDA via arquivo.xlsx')
@@ -151,12 +152,16 @@ elif opcoes_sidebar == 'Diferença pelo nome das empresas':
 elif opcoes_sidebar == 'Vínculos Agrupados por Setor':
     st.plotly_chart(grafico_setor)
 
+ 
 elif opcoes_sidebar == 'Empresas por Setores':
+
+    # Separar os setores divididos por barra '/' em várias linhas
+    df_dda = df_dda.assign(Setor=df_dda['Setor'].str.split('/')).explode('Setor')
 
     # Remover duplicatas com base no 'Nome Cedente' e agrupar observações
     df_dda['Observação do Vínculo'] = df_dda.groupby(['Nome Cedente', 'Setor'])['Observação do Vínculo'].transform(lambda x: ', '.join(x.dropna().unique()))
 
-    # Remover duplicatas, mantendo apenas uma linha por empresa
+    # Remover duplicatas, mantendo apenas uma linha por empresa e setor
     df_unicos = df_dda.drop_duplicates(subset=['Nome Cedente', 'Setor'])
 
     # Exibir o dropdown para selecionar o setor
@@ -166,5 +171,33 @@ elif opcoes_sidebar == 'Empresas por Setores':
     # Filtrar as empresas pelo setor selecionado
     empresas_filtradas = df_unicos[df_unicos['Setor'] == setor_selecionado]
 
-    # Exibir as empresas filtradas
-    st.dataframe(empresas_filtradas[['Nome Cedente', 'Observação do Vínculo']])
+    # Definir o mapeamento de cores para a coluna "Situação" com tons mais claros
+    color_map = {
+        'Automático': 'background-color: lightgreen',  # Verde claro
+        'Manual': 'background-color: lightblue',       # Azul claro
+        'Pendente': 'background-color: yellow',        # Mantém o amarelo
+        'Vinculado - Com diferença': 'background-color: lightcoral'  # Vermelho claro
+    }
+
+    # Função para aplicar a coloração com base na "Situação"
+    def apply_colors(val):
+        return color_map.get(val, '')
+
+    # Aplicar o estilo na coluna "Situação" para colorir as células
+    styled_df = empresas_filtradas.style.applymap(apply_colors, subset=['Situação'])
+
+    # Exibir a tabela com a formatação
+    st.dataframe(styled_df)
+
+    # Criar um buffer de memória para o arquivo Excel
+    output = BytesIO()
+    empresas_filtradas.to_excel(output, index=False)
+    output.seek(0)  # Retorna ao início do buffer
+
+    # Mostrar o botão de download
+    st.download_button(
+        label="Clique aqui para baixar o arquivo Excel",
+        data=output,
+        file_name="empresas_filtradas.xlsx",
+        mime="application/vnd.ms-excel"
+    )
