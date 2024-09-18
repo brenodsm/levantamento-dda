@@ -73,7 +73,7 @@ grafico_setor.update_traces(
 # Criar a visualização
 st.title('Levantamento DDA')
 st.sidebar.title("**Selecione uma opção**")
-opcoes_sidebar = st.sidebar.radio('ㅤ', ['Situação Vinculo', 'Situação - Nome Cedente', 'Diferença pelo nome das empresas', 'Vínculos Agrupados por Setor','Empresas por Setores'])
+opcoes_sidebar = st.sidebar.radio('ㅤ', ['Situação Vinculo', 'Situação - Nome Cedente', 'Diferença pelo nome das empresas', 'Vínculos Agrupados por Setor','Tabela - Empresas por setores'])
 
 
 for c in range(10):
@@ -153,7 +153,7 @@ elif opcoes_sidebar == 'Vínculos Agrupados por Setor':
     st.plotly_chart(grafico_setor)
 
  
-elif opcoes_sidebar == 'Empresas por Setores':
+elif opcoes_sidebar == 'Tabela - Empresas por setores':
 
     # Separar os setores divididos por barra '/' em várias linhas
     df_dda = df_dda.assign(Setor=df_dda['Setor'].str.split('/')).explode('Setor')
