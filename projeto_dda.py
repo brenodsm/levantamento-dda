@@ -72,7 +72,7 @@ grafico_setor.update_traces(
 
 # Criar a visualização
 st.title('Levantamento DDA')
-st.sidebar.title("**Selecione uma DashBoard**")
+st.sidebar.title("**Selecione uma opção**")
 opcoes_sidebar = st.sidebar.radio('ㅤ', ['Situação Vinculo', 'Situação - Nome Cedente', 'Diferença pelo nome das empresas', 'Vínculos Agrupados por Setor','Empresas por Setores'])
 
 
